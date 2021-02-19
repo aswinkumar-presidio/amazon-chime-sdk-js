@@ -552,6 +552,44 @@ export default class DefaultDeviceController implements DeviceControllerBasedMed
     );
   }
 
+  static getIntrinsicDeviceId(device: Device): string | null {
+    if (device === undefined) {
+      return undefined;
+    }
+
+    if (device === null) {
+      return null;
+    }
+
+    if (typeof device === 'string') {
+      return device;
+    }
+
+    if ((device as MediaStream).id) {
+      return (device as MediaStream).id;
+    }
+
+    const constraints: MediaTrackConstraints = device as MediaTrackConstraints;
+    if (constraints.deviceId === undefined) {
+      return undefined;
+    }
+
+    if (constraints.deviceId === null) {
+      return null;
+    }
+
+    if (typeof constraints.deviceId === 'string') {
+      return constraints.deviceId;
+    }
+
+    const deviceIdConstraint: ConstrainDOMStringParameters = constraints.deviceId as ConstrainDOMStringParameters;
+    if (typeof deviceIdConstraint.exact === 'string') {
+      return deviceIdConstraint.exact;
+    }
+
+    return undefined;
+  }
+
   static createEmptyAudioDevice(): MediaStream {
     return DefaultDeviceController.synthesizeAudioDevice(0);
   }
@@ -797,7 +835,7 @@ export default class DefaultDeviceController implements DeviceControllerBasedMed
   }
 
   private hasSameGroupId(groupId: string, kind: string, device: Device): boolean {
-    device = this.getIntrinsicDeviceIdStr(device);
+    device = DefaultDeviceController.getIntrinsicDeviceId(device);
     if (groupId === this.getGroupIdFromDeviceId(kind, device) || groupId === '') {
       return true;
     }
@@ -813,33 +851,6 @@ export default class DefaultDeviceController implements DeviceControllerBasedMed
         return cachedDeviceInfo.groupId;
       }
     }
-    return '';
-  }
-
-  private getIntrinsicDeviceIdStr(device: Device): string | null {
-    if (device === null) {
-      return null;
-    }
-    if (typeof device === 'string') {
-      return device;
-    }
-    if ((device as MediaStream).id) {
-      return (device as MediaStream).id;
-    }
-
-    const constraints: MediaTrackConstraints = device as MediaTrackConstraints;
-    if (!constraints.deviceId) {
-      return '';
-    }
-    if (typeof constraints.deviceId === 'string') {
-      return constraints.deviceId;
-    }
-
-    const deviceIdConstraint: ConstrainDOMStringParameters = constraints.deviceId as ConstrainDOMStringParameters;
-    if (typeof deviceIdConstraint.exact === 'string') {
-      return deviceIdConstraint.exact;
-    }
-
     return '';
   }
 
@@ -1011,7 +1022,10 @@ export default class DefaultDeviceController implements DeviceControllerBasedMed
           }
         });
       }
-      newDevice.groupId = this.getGroupIdFromDeviceId(kind, this.getIntrinsicDeviceIdStr(device));
+      newDevice.groupId = this.getGroupIdFromDeviceId(
+        kind,
+        DefaultDeviceController.getIntrinsicDeviceId(device)
+      );
     } catch (error) {
       let errorMessage: string;
       if (error?.name && error.message) {
@@ -1273,7 +1287,10 @@ export default class DefaultDeviceController implements DeviceControllerBasedMed
 
     const settings = stream.getTracks()[0].getSettings();
     // If a device does not specify deviceId, we have to assume the stream is not reusable.
-    return settings.deviceId === this.getIntrinsicDeviceIdStr(device);
+    return (
+      settings.deviceId &&
+      settings.deviceId === DefaultDeviceController.getIntrinsicDeviceId(device)
+    );
   }
 
   private reconnectAudioInputs(): void {

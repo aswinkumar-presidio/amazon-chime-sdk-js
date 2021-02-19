@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add End-to-end Integration test for Video Test App
 
 ### Changed
+- Allow device checker APIs to take devices as input, rather than only MediaDeviceInfo objects.
 
 - Enable SIMD autodetection for Amazon Voice Focus in Chrome 90+.
 

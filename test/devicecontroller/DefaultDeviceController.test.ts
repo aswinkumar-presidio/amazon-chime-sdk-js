@@ -2106,4 +2106,38 @@ describe('DefaultDeviceController', () => {
       deviceController.chooseAudioInputDevice(stringDeviceId);
     });
   });
+
+  describe('getIntrinsicDeviceId', () => {
+    it('Return undefined if the device is undefined', () => {
+      expect(DefaultDeviceController.getIntrinsicDeviceId(undefined)).to.be.undefined;
+    });
+
+    it('Return null if the device is null', () => {
+      expect(DefaultDeviceController.getIntrinsicDeviceId(null)).to.be.null;
+    });
+
+    it('Return string if the device is of type string', () => {
+      expect(DefaultDeviceController.getIntrinsicDeviceId('')).to.equal('');
+    });
+
+    it('Return undefined if the constraint deviceId is undefined', () => {
+      const constraints: MediaTrackConstraints = {};
+      expect(DefaultDeviceController.getIntrinsicDeviceId(constraints)).to.be.undefined;
+    });
+
+    it('Return null if the constraint deviceId is null', () => {
+      const constraints: MediaTrackConstraints = { deviceId: null };
+      expect(DefaultDeviceController.getIntrinsicDeviceId(constraints)).to.be.null;
+    });
+
+    it('Return string if the constraint deviceId is of type string', () => {
+      const constraints: MediaTrackConstraints = { deviceId: '' };
+      expect(DefaultDeviceController.getIntrinsicDeviceId(constraints)).to.equal('');
+    });
+
+    it('Return string if the constraint deviceId is of type ConstrainDOMStringParameters', () => {
+      const constraints: MediaTrackConstraints = { deviceId: { exact: 'device1' } };
+      expect(DefaultDeviceController.getIntrinsicDeviceId(constraints)).to.equal('device1');
+    });
+  });
 });
